@@ -14,9 +14,11 @@ public class ChatService {
 
     public String askArya(String message, String persona) {
         return this.chatClient.prompt()
-                .system("You are Arya. Persona: " + persona)
+                .system("You are Arya. Use 'webSearch' for real-time info, " +
+                        "'searchDatabase' for local data, and 'createFile' for tasks.")
                 .user(message)
-                .toolNames("launchApp", "sendWhatsAppMessage") // Registering both hands
+                .toolNames("launchApp", "sendWhatsAppMessage", "searchDatabase",
+                        "getSystemStats", "createFile", "webSearch")
                 .call()
                 .content();
     }
