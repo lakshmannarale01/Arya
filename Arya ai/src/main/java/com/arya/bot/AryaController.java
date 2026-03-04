@@ -1,10 +1,13 @@
 package com.arya.bot;
 
+import com.arya.bot.model.ChatMessage;
 import com.arya.bot.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.InputStreamResource;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,8 +18,8 @@ public class AryaController {
 
 	// Standard Chat Endpoint
 	@GetMapping("/ask")
-	public String ask(@RequestParam String message, @RequestParam(defaultValue = "helper") String persona) {
-		return chatService.askArya(message, persona);
+	public String ask(@RequestParam String message) {
+		return chatService.askArya(message, "Assistant");
 	}
 
 	// NEW: Vision Endpoint (Handles Image Upload)
@@ -31,5 +34,10 @@ public class AryaController {
 		} catch (Exception e) {
 			return "Error processing image: " + e.getMessage();
 		}
+	}
+
+	@GetMapping("/history") // This was missing, causing the 404
+	public List<ChatMessage> getHistory() {
+		return chatService.getChatHistory();
 	}
 }

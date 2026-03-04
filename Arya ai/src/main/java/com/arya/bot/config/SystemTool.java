@@ -11,15 +11,15 @@ public class SystemTool {
     // Input data for the tool
     public record AppRequest(String appName) {}
 
-    @Bean
-    @Description("Launch a Windows application like 'notepad', 'chrome', or 'calc'")
-    public Function<AppRequest, String> launchApp() {
-        return request -> {
+    @Bean("launchApp")
+    @Description("Opens a system application. Pass 'calc' for calculator.")
+    public Function<String, String> launchApp() {
+        return appName -> {
             try {
-                Runtime.getRuntime().exec("cmd /c start " + request.appName());
-                return "Successfully opened " + request.appName();
+                Runtime.getRuntime().exec("cmd /c start " + appName);
+                return "Application " + appName + " launched.";
             } catch (Exception e) {
-                return "Failed to open app: " + e.getMessage();
+                return "Failed to launch: " + e.getMessage();
             }
         };
     }
