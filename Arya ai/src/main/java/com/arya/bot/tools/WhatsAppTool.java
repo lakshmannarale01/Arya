@@ -3,25 +3,28 @@ package com.arya.bot.tools;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
-import java.util.function.Function;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.function.Function;
 @Configuration
 public class WhatsAppTool {
 
-    // This is the "Tool Definition" that Arya reads
-    @Bean
-    @Description("Sends a message to a specific contact on WhatsApp")
-    public Function<WhatsAppRequest, WhatsAppResponse> sendWhatsAppMessage() {
-        return request -> {
-            // This is where the actual automation happens
-            System.out.println("ARYA ACTION: Sending '" + request.message() + "' to " + request.recipient());
+    // Record must be here
+    public record WhatsAppRequest(String phoneNumber, String message) {}
 
-            // For now, we simulate success. Later we plug in Twilio or Selenium.
-            return new WhatsAppResponse("Successfully sent message to " + request.recipient());
+    @Bean
+    @Description("Send a WhatsApp message to a specific phone number")
+    public Function<WhatsAppRequest, String> sendWhatsAppMessage() {
+        return request -> {
+            try {
+                String url = "https://web.whatsapp.com/send?phone=" + request.phoneNumber() +
+                        "&text=" + URLEncoder.encode(request.message(), StandardCharsets.UTF_8);
+                Runtime.getRuntime().exec("cmd /c start " + url);
+                return "Arya: Opening WhatsApp Web...";
+            } catch (Exception e) {
+                return "Error: " + e.getMessage();
+            }
         };
     }
-
-    // Data structures for the tool
-    public record WhatsAppRequest(String recipient, String message) {}
-    public record WhatsAppResponse(String status) {}
 }

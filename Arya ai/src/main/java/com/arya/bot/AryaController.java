@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AryaController {
 
-
 	private final ChatService chatService;
 
 	@GetMapping("/ask")
 	public String ask(
 			@RequestParam String message,
 			@RequestParam(defaultValue = "best friend") String persona) {
+		// This will now work because ChatService has been updated to accept 2 arguments
 		return chatService.askArya(message, persona);
 	}
 }
