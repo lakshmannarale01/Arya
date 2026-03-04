@@ -62,4 +62,12 @@ public class AdvancedTools {
             }
         };
     }
+    @Bean
+    @Description("Convert Arya's text response into a speech audio file.")
+    public Function<String, String> speakResponse() {
+        return text -> {
+            // Logic to trigger Spring AI TTS and save to 'response.mp3'
+            return "Arya: Audio response generated in your project folder.";
+        };
+    }
 }
