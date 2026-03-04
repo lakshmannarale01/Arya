@@ -3,6 +3,7 @@ package com.arya.bot;
 import com.arya.bot.model.ChatMessage;
 import com.arya.bot.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.InputStreamResource;
@@ -39,5 +40,13 @@ public class AryaController {
 	@GetMapping("/history") // This was missing, causing the 404
 	public List<ChatMessage> getHistory() {
 		return chatService.getChatHistory();
+	}
+
+
+	@DeleteMapping("/history")
+	@CrossOrigin(origins = "http://localhost:3001")
+	public ResponseEntity<String> clearHistory() {
+		chatService.clearHistory();
+		return ResponseEntity.ok("History cleared successfully");
 	}
 }
