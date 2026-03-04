@@ -31,7 +31,9 @@ public class ChatService {
         String response = this.chatClient.prompt()
                 .system("You are Arya, the user's best friend. Be helpful, cool, and smart. " +
                         "If the user asks for information (like gold rates), provide the answer directly in chat. " +
-                        "Only use 'COMMAND:launchApp:appName' at the end if you need to open a tool.")
+                        "Only use 'COMMAND:launchApp:appName' at the end if you need to open a tool. " +
+                        "For volume control, use 'COMMAND:volume:UP/DOWN/MUTE'. " +
+                        "For system control, use 'COMMAND:system:SHUTDOWN/RESTART/SLEEP'.")
                 .user(message)
                 .call()
                 .content();
@@ -43,28 +45,52 @@ public class ChatService {
         }
 
         // 3. LOGIC: Tool Execution
-        if (response.contains("COMMAND:launchApp:")) {
+        if (response.contains("COMMAND:")) {
             try {
-                int cmdIndex = response.indexOf("COMMAND:launchApp:");
+                int cmdIndex = response.indexOf("COMMAND:");
                 String commandPart = response.substring(cmdIndex);
-                String appName = commandPart.split(":")[2].trim();
+                String[] parts = commandPart.split(":");
+                String type = parts[1];
+                String action = parts[2].trim();
 
-                // Handle YouTube Music (Better for playing songs directly)
-                if (message.toLowerCase().contains("play") && message.toLowerCase().contains("youtube")) {
-                    String song = message.toLowerCase().replace("play", "").replace("on youtube", "").trim();
-                    // Using Music URL for better chance of direct playback
-                    String musicUrl = "https://music.youtube.com/search?q=" + song.replace(" ", "+");
-                    Runtime.getRuntime().exec("cmd /c start chrome \"" + musicUrl + "\"");
-                    response = response.replace(commandPart, "").trim() + "\n(Playing " + song + " on YouTube Music for you! 🎵)";
-                }
-                // Handle Generic Google Searches
-                else if (appName.equalsIgnoreCase("google") || appName.equalsIgnoreCase("search")) {
-                    String query = message.replace("search", "").trim();
-                    Runtime.getRuntime().exec("cmd /c start chrome \"https://www.google.com/search?q=" + query.replace(" ", "+") + "\"");
-                }
-                // Handle Local Apps (calc, notepad)
-                else {
-                    Runtime.getRuntime().exec("cmd /c start " + appName.toLowerCase());
+                if (type.equals("launchApp")) {
+                    // Handle YouTube Music (Better for playing songs directly)
+                    if (message.toLowerCase().contains("play") && message.toLowerCase().contains("youtube")) {
+                        String song = message.toLowerCase().replace("play", "").replace("on youtube", "").trim();
+                        // Using Music URL for better chance of direct playback
+                        String musicUrl = "https://music.youtube.com/search?q=" + song.replace(" ", "+");
+                        Runtime.getRuntime().exec("cmd /c start chrome \"" + musicUrl + "\"");
+                        response = response.replace(commandPart, "").trim() + "\n(Playing " + song + " on YouTube Music for you! 🎵)";
+                    }
+                    // Handle Generic Google Searches
+                    else if (action.equalsIgnoreCase("google") || action.equalsIgnoreCase("search")) {
+                        String query = message.replace("search", "").trim();
+                        Runtime.getRuntime().exec("cmd /c start chrome \"https://www.google.com/search?q=" + query.replace(" ", "+") + "\"");
+                    }
+                    // Handle Local Apps (calc, notepad)
+                    else {
+                        Runtime.getRuntime().exec("cmd /c start " + action.toLowerCase());
+                    }
+                } else if (type.equals("volume")) {
+                    String cmd = "";
+                    switch (action.toUpperCase()) {
+                        case "UP" -> cmd = "(New-Object -ComObject WScript.Shell).SendKeys([char]175)";
+                        case "DOWN" -> cmd = "(New-Object -ComObject WScript.Shell).SendKeys([char]174)";
+                        case "MUTE" -> cmd = "(New-Object -ComObject WScript.Shell).SendKeys([char]173)";
+                    }
+                    if (!cmd.isEmpty()) {
+                        Runtime.getRuntime().exec(new String[]{"powershell", "-c", cmd});
+                    }
+                } else if (type.equals("system")) {
+                    String cmd = "";
+                    switch (action.toUpperCase()) {
+                        case "SHUTDOWN" -> cmd = "shutdown /s /t 10";
+                        case "RESTART" -> cmd = "shutdown /r /t 10";
+                        case "SLEEP" -> cmd = "rundll32.exe powrprof.dll,SetSuspendState 0,1,0";
+                    }
+                    if (!cmd.isEmpty()) {
+                        Runtime.getRuntime().exec("cmd /c " + cmd);
+                    }
                 }
 
                 // Remove the technical command from the UI display
